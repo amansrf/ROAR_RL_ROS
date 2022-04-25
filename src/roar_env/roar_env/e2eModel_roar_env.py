@@ -140,58 +140,27 @@ class ROARppoEnvE2E(ROAREnv):
             return False
 
     def get_reward(self) -> float:
-        # prep for reward computation
-        # reward = -0.1*(1-self.agent.vehicle.control.throttle+10*self.agent.vehicle.control.braking+abs(self.agent.vehicle.control.steering))*400/8
+        
+        # ---------------------------------------------------------------------------------------------------------------------------#
+        #              TODO: Need to add subsciber function here (check for crash, IR sensor and Ultrasonic data values)             #
+        # -------------------------------------------------------------------------------------------------------------------------- #
+        
         reward=-1
-        # curr_dist_to_strip = self.agent.curr_dist_to_strip
-        #################REVERT FROM 2.1.7
-        # if self.end_check:
-        #     return 0
-        #################REVERT FROM 2.1.7
-        # if self.reset_by_crash and self.crash_check:
+        
         if self.crash_check:
             print("no reward")
             return 0
-        # reward computation
-        # current_speed = self.agent.bbox_list[self.agent.int_counter%len(self.agent.bbox_list)].get_directional_velocity(self.agent.vehicle.velocity.x,self.agent.vehicle.velocity.y)
-        # current_speed = self.agent.vehicle.get_speed()
-        # self.speeds.append(current_speed)
+        
 
         if self.agent.cross_reward > self.prev_cross_reward:
             reward += (self.agent.cross_reward - self.prev_cross_reward)*self.agent.interval*self.time_to_waypoint_ratio
 
 
-
-
-
-        # print(self.agent.int_counter, death_line_dis)
-        # print(len(self.agent.bbox_list))
-        # print("next")
-        # print(self.agent.bbox_list[(self.agent.int_counter) % len(self.agent.bbox_list)].has_crossed(
-        #     self.agent.vehicle.transform))
-        # print("prev")
-        # print(self.agent.bbox_list[(self.agent.int_counter - death_line_dis) % len(self.agent.bbox_list)].has_crossed(
-        #     self.agent.vehicle.transform))
-        # print("future")
-        # print(self.agent.bbox_list[(self.agent.int_counter + death_line_dis) % len(self.agent.bbox_list)].has_crossed(
-        #     self.agent.vehicle.transform))
         if not (self.agent.bbox_list[(self.agent.int_counter - self.death_line_dis) % len(self.agent.bbox_list)].has_crossed(self.agent.vehicle.transform))[0]:
             reward -= 200
             self.crash_check = True
             print("BADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBADBAD")
-        # if self.agent.int_counter > 5 and \
-        #     self.agent.bbox_list[(self.agent.int_counter- death_line_dis) % len(self.agent.bbox_list)].has_crossed(self.agent.vehicle.transform):
-        #     print(self.agent.int_counter, death_line_dis)
-        #     print(len(self.agent.bbox_list))
-        #     print("next")
-        #     print(self.agent.bbox_list[(self.agent.int_counter) % len(self.agent.bbox_list)].has_crossed(self.agent.vehicle.transform))
-        #     print("prev")
-        #     print(self.agent.bbox_list[(self.agent.int_counter - death_line_dis) % len(self.agent.bbox_list)].has_crossed(
-        #         self.agent.vehicle.transform))
-        #     print("future")
-        #     print(self.agent.bbox_list[(self.agent.int_counter + death_line_dis) % len(self.agent.bbox_list)].has_crossed(
-        #         self.agent.vehicle.transform))
-
+        
         if self.carla_runner.get_num_collision() > 0:
             reward -= 200
             self.crash_check = True
@@ -203,6 +172,9 @@ class ROARppoEnvE2E(ROAREnv):
         return reward
 
     def _get_obs(self) -> np.ndarray:
+        # ---------------------------------------------------------------------------------------------------------------------------#
+        #              TODO: Need to add subsciber function here (BEV)  I THINK!                                                     #
+        # -------------------------------------------------------------------------------------------------------------------------- #
         if mode=='baseline':
             # vehicle_state=self.agent.vehicle.to_array() #12
             # line_location=self.agent.bbox.to_array(vehicle_state[3],vehicle_state[5]) #4
