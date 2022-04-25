@@ -20,7 +20,7 @@ from agent_module.agent import Agent
 
 # -------------------------------- RL Imports -------------------------------- #
 import gym
-from gym.spaces import Discrete, Box
+from Rgym.spaces import Discrete, Box
 
 # ----------------------------- Wandb Integration ---------------------------- #
 import wandb
@@ -28,7 +28,11 @@ import wandb
 # ----------------------------- Base Class Import ---------------------------- #
 from roar_env.roar_env import ROAREnv
 
-
+# ----------------------------- ROS Import ---------------------------- #
+import rclpy
+from roar_env.control_streamer import ControlStreamer
+from roar_env.state_streamer import StateStreamer
+from roar_env.bev_module import BEVmodule
 FRAME_STACK = 4
 FRAME_SIZE = {
     "x_res": 84,
@@ -71,6 +75,15 @@ class ROARppoEnvE2E(ROAREnv):
         # self.end_check=False
         self.death_line_dis = 5
 
+
+        rclpy.init()
+        self.cntrl_pub_node = ControlStreamer()
+        self.state_sub_node = StateStreamer()
+        self.brv_sub_node = BEVmodule()
+        rclpy.spin_once(self.state_sub_node)
+        rclpy.spin_once(self.brv_sub_node)
+
+
     def step(self, action: Any) -> Tuple[Any, float, bool, dict]:
         obs = []
         rewards = []
@@ -88,6 +101,9 @@ class ROARppoEnvE2E(ROAREnv):
             # ---------------------------------------------------------------------------- #
             #              TODO: Add Control Publisher Here Using values above             #
             # ---------------------------------------------------------------------------- #
+
+            self.cntrl_pub_node.pub_cntrl(throttle=throttle, steer = steering, brake = float(braking))
+
             ob, reward, is_done, info = super(ROARppoEnvE2E, self).step(action)
             obs.append(ob)
             rewards.append(reward)
@@ -144,9 +160,14 @@ class ROARppoEnvE2E(ROAREnv):
         # ---------------------------------------------------------------------------------------------------------------------------#
         #              TODO: Need to add subsciber function here (check for crash, IR sensor and Ultrasonic data values)             #
         # -------------------------------------------------------------------------------------------------------------------------- #
-        
+        #Create a RL_reward node  which subscribes to the state node 
+
         reward=-1
+
         
+       #self.state_sub_node = get data for crash and reward and input it in the following steps
+
+
         if self.crash_check:
             print("no reward")
             return 0
@@ -175,6 +196,11 @@ class ROARppoEnvE2E(ROAREnv):
         # ---------------------------------------------------------------------------------------------------------------------------#
         #              TODO: Need to add subsciber function here (BEV)  I THINK!                                                     #
         # -------------------------------------------------------------------------------------------------------------------------- #
+        #Create a RL_obs node  which subscribes to the BEV Module (node). RL_env receives the info tfrom the RL_obs node 
+
+
+        #self.bev_sub_node = get data for occupancy grid and give it to the following
+
         if mode=='baseline':
             # vehicle_state=self.agent.vehicle.to_array() #12
             # line_location=self.agent.bbox.to_array(vehicle_state[3],vehicle_state[5]) #4

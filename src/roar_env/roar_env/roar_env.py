@@ -26,7 +26,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.base_class import BaseAlgorithm
 
 
-class ROAREnv(gym.Env, ABC):
+class ROAREnv(gym.Env, ABC):                                        #I guess, this is more like a template, Mjor changes need to me made in e2eModel
     def __init__(self, params: Dict[str, Any]):
         """
 
